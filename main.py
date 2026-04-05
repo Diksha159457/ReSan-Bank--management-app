@@ -104,4 +104,4 @@ def delete_account(account_id: int):
     
     return {
         "message": f"Account {account_id} deleted successfully"
-    }  
+    }
