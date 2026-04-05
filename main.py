@@ -4,6 +4,9 @@ from fastapi import FastAPI
 # Import CORS middleware (used to allow frontend and backend to communicate)
 from fastapi.middleware.cors import CORSMiddleware  
 
+# Import BaseModel (used for request validation)
+from pydantic import BaseModel  
+
 
 # Create FastAPI app instance (this is your main backend app)
 app = FastAPI()  
@@ -13,62 +16,66 @@ app = FastAPI()
 
 # Add CORS middleware to the app
 app.add_middleware(
-    CORSMiddleware,  # Enables CORS handling
+    CORSMiddleware,  # Enables communication between frontend & backend
 
-    allow_origins=["*"],  
-    # Allows requests from ANY frontend (Netlify, localhost, etc.)
-    # "*" = no restriction (good for testing, restrict later for security)
+    allow_origins=["https://resan-bank-app.netlify.app"],  
+    # 🔥 CHANGE: Only allow your Netlify frontend (more secure than "*")
 
     allow_credentials=True,  
-    # Allows cookies, authentication headers, login sessions
+    # Allows cookies, authentication headers, sessions
 
     allow_methods=["*"],  
-    # Allows all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    # Allows all HTTP methods (GET, POST, PUT, DELETE)
 
     allow_headers=["*"],  
-    # Allows all types of headers (Authorization, Content-Type, etc.)
+    # Allows all headers (Authorization, Content-Type, etc.)
 )
+
+
+# -------------------- DATA MODEL --------------------
+
+# Define a structure for account data (instead of raw dict)
+class Account(BaseModel):  
+    name: str       # Account holder name
+    balance: float  # Account balance
 
 
 # -------------------- ROOT ROUTE --------------------
 
-# Define a GET API at the root URL "/"
 @app.get("/")  
 def home():  
-    # This function runs when user opens base URL
+    # Runs when base URL is opened
     return {"message": "Backend is working!"}  
     # Returns JSON response
 
 
 # -------------------- TEST ROUTE --------------------
 
-# Define another GET API for testing
 @app.get("/test")  
 def test():  
-    # This endpoint is useful to check if API is running
+    # Simple API to check if backend is running
     return {"status": "API working fine"}  
 
 
-# -------------------- SAMPLE DATA ROUTE --------------------
+# -------------------- GET ALL ACCOUNTS --------------------
 
-# Example: return some dummy bank data
 @app.get("/accounts")  
 def get_accounts():  
-    # Simulated data (you can replace with database later)
+    # Simulated database (dummy data)
     accounts = [
         {"id": 1, "name": "Richa", "balance": 5000},
         {"id": 2, "name": "Amit", "balance": 12000},
     ]
     return {"accounts": accounts}  
+    # Returns list of accounts
 
 
-# -------------------- CREATE DATA ROUTE --------------------
+# -------------------- CREATE ACCOUNT --------------------
 
-# Example: POST API to add account
 @app.post("/accounts")  
-def create_account(account: dict):  
-    # Accepts JSON data from frontend
-    # Example input: {"name": "Riya", "balance": 3000}
+def create_account(account: Account):  
+    # 🔥 CHANGE: Now using Account model instead of dict
+    # FastAPI automatically validates input JSON
     
     return {
         "message": "Account created successfully",
@@ -76,13 +83,12 @@ def create_account(account: dict):
     }  
 
 
-# -------------------- UPDATE DATA ROUTE --------------------
+# -------------------- UPDATE ACCOUNT --------------------
 
-# Example: update account using PUT
 @app.put("/accounts/{account_id}")  
-def update_account(account_id: int, account: dict):  
+def update_account(account_id: int, account: Account):  
     # account_id comes from URL
-    # account data comes from request body
+    # account data comes from request body (validated)
     
     return {
         "message": f"Account {account_id} updated",
@@ -90,12 +96,11 @@ def update_account(account_id: int, account: dict):
     }  
 
 
-# -------------------- DELETE DATA ROUTE --------------------
+# -------------------- DELETE ACCOUNT --------------------
 
-# Example: delete account
 @app.delete("/accounts/{account_id}")  
 def delete_account(account_id: int):  
-    # Deletes account using ID
+    # Deletes account using ID (dummy response)
     
     return {
         "message": f"Account {account_id} deleted successfully"
