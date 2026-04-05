@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<!-- Root HTML document for ReSan Bank web application -->
+<html lang="en">
+<head>
+  <!-- Character encoding for Unicode/emoji support -->
+  <meta charset="UTF-8" />
+  <!-- Makes the page responsive on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tab title and browser tab icon text -->
+  <title>ReSan Private Bank</title>
+  <!-- Google Fonts: Cormorant Garamond for luxury headings, Jost for body text -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- Link to external CSS stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       BACKGROUND DECORATIVE ORBS (pure CSS animation, no JS)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="bg-orb orb1"></div> <!-- Top-left glowing orb -->
+  <div class="bg-orb orb2"></div> <!-- Bottom-right glowing orb -->
+  <div class="bg-orb orb3"></div> <!-- Center subtle orb -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PAGE WRAPPER — contains everything visible on screen
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="app-wrapper">
+
+    <!-- ─── SIDEBAR NAVIGATION ─────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- Bank logo / brand area -->
+      <div class="sidebar-brand">
+        <div class="brand-icon">R</div> <!-- Circular logo with letter R -->
+        <div>
+          <div class="brand-name">ReSan</div>       <!-- Bank name -->
+          <div class="brand-sub">Private Banking</div> <!-- Tagline -->
+        </div>
+      </div>
+
+      <!-- Divider line below brand -->
+      <div class="sidebar-divider"></div>
+
+      <!-- Navigation menu items — each calls showPage() on click -->
+      <nav class="sidebar-nav">
+        <!-- data-page attribute tells JS which page to show -->
+        <a class="nav-item active" data-page="home"        onclick="showPage('home')">        <span class="nav-icon">⌂</span> Home         </a>
+        <a class="nav-item"        data-page="dashboard"   onclick="showPage('dashboard')">   <span class="nav-icon">◈</span> Dashboard    </a>
+        <a class="nav-item"        data-page="deposit"     onclick="showPage('deposit')">     <span class="nav-icon">↓</span> Deposit      </a>
+        <a class="nav-item"        data-page="withdraw"    onclick="showPage('withdraw')">    <span class="nav-icon">↑</span> Withdraw     </a>
+        <a class="nav-item"        data-page="details"     onclick="showPage('details')">     <span class="nav-icon">≡</span> My Details   </a>
+        <a class="nav-item"        data-page="update"      onclick="showPage('update')">      <span class="nav-icon">✎</span> Update       </a>
+        <a class="nav-item"        data-page="close"       onclick="showPage('close')">       <span class="nav-icon">✕</span> Close Acct   </a>
+      </nav>
+
+      <!-- Bottom section: shows logged-in user info or login/signup buttons -->
+      <div class="sidebar-footer">
+        <!-- Shown when user is NOT logged in -->
+        <div id="auth-buttons">
+          <button class="btn-gold"    onclick="showModal('login')">Login</button>    <!-- Opens login modal -->
+          <button class="btn-outline" onclick="showModal('signup')">Sign Up</button> <!-- Opens signup modal -->
+        </div>
+        <!-- Shown when user IS logged in (hidden by default) -->
+        <div id="user-info" style="display:none;">
+          <div class="user-avatar" id="user-avatar">?</div> <!-- First letter of user's name -->
+          <div class="user-name"   id="user-name">Guest</div>   <!-- Full name display -->
+          <button class="btn-outline" onclick="logout()">Logout</button> <!-- Logout button -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ─── MAIN CONTENT AREA ──────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- Hamburger menu button (visible on mobile only) -->
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+      <!-- ══════════════ PAGE: HOME ══════════════ -->
+      <section class="page active" id="page-home">
+        <!-- Animated welcome heading -->
+        <div class="page-hero">
+          <p class="hero-eyebrow">Welcome to</p>
+          <h1 class="hero-title">ReSan<br><span>Private Bank</span></h1>
+          <p class="hero-desc">Experience banking built on trust, elegance, and security. Your wealth, our commitment.</p>
+          <!-- CTA buttons -->
+          <div class="hero-actions">
+            <button class="btn-gold-lg" onclick="showModal('signup')">Open Account</button>
+            <button class="btn-ghost"   onclick="showModal('login')">Sign In →</button>
+          </div>
+        </div>
+
+        <!-- Feature cards row -->
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Bank-Grade Security</h3>
+            <p>AES-256 encryption and OTP verification on every sensitive action.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Instant Transfers</h3>
+            <p>Deposit and withdraw funds in real-time with full transaction logs.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">👨‍👩‍👧</div>
+            <h3>Minor Accounts</h3>
+            <p>Open guardian-managed accounts for those under 18, safely.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ PAGE: DASHBOARD ══════════════ -->
+      <section class="page" id="page-dashboard">
+        <div class="page-header">
+          <h2 class="page-title">Dashboard</h2>
+          <p class="page-sub">Overview of your account</p>
+        </div>
+
+        <!-- Balance card — values filled by JS -->
+        <div class="balance-hero">
+          <div class="balance-label">Available Balance</div>
+          <div class="balance-amount" id="dash-balance">₹0.00</div>
+          <div class="account-chip"  id="dash-accno">—</div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val" id="dash-name">—</div><div class="stat-lbl">Account Holder</div></div>
+          <div class="stat-box"><div class="stat-val" id="dash-age">—</div> <div class="stat-lbl">Age</div></div>
+          <div class="stat-box"><div class="stat-val" id="dash-email">—</div><div class="stat-lbl">Email</div></div>
+          <div class="stat-box"><div class="stat-val" id="dash-type">—</div> <div class="stat-lbl">Account Type</div></div>
+        </div>
+
+        <!-- Recent transactions list -->
+        <div class="card mt">
+          <h3 class="card-title">Recent Transactions</h3>
+          <div id="txn-list"><p class="muted">No transactions yet.</p></div>
+        </div>
+      </section>
+
+      <!-- ══════════════ PAGE: DEPOSIT ══════════════ -->
+      <section class="page" id="page-deposit">
+        <div class="page-header">
+          <h2 class="page-title">Deposit Funds</h2>
+          <p class="page-sub">Add money to your account</p>
+        </div>
+        <div class="card">
+          <!-- Account number input -->
+          <div class="field-group">
+            <label>Account Number</label>
+            <input type="text" id="dep-acc" placeholder="RS-XXXXXXX" oninput="formatAccNo(this)" />
+            <span class="field-hint">Format: RS- followed by letters/numbers</span>
+          </div>
+          <!-- PIN input (masked) -->
+          <div class="field-group">
+            <label>4-Digit PIN</label>
+            <input type="password" id="dep-pin" maxlength="4" placeholder="••••" oninput="validatePinInput(this)" />
+          </div>
+          <!-- Amount input — only positive integers allowed -->
+          <div class="field-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="dep-amount" placeholder="Enter amount" min="1" max="100000" step="1" oninput="validateAmount(this, 100000)" />
+            <span class="field-hint">Minimum ₹1 · Maximum ₹1,00,000 per transaction</span>
+          </div>
+          <button class="btn-gold-lg full" onclick="handleDeposit()">Deposit Now</button>
+        </div>
+      </section>
+
+      <!-- ══════════════ PAGE: WITHDRAW ══════════════ -->
+      <section class="page" id="page-withdraw">
+        <div class="page-header">
+          <h2 class="page-title">Withdraw Funds</h2>
+          <p class="page-sub">Transfer money out of your account</p>
+        </div>
+        <div class="card">
+          <div class="field-group">
+            <label>Account Number</label>
+            <input type="text" id="with-acc" placeholder="RS-XXXXXXX" oninput="formatAccNo(this)" />
+          </div>
+          <div class="field-group">
+            <label>4-Digit PIN</label>
+            <input type="password" id="with-pin" maxlength="4" placeholder="••••" oninput="validatePinInput(this)" />
+          </div>
+          <div class="field-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="with-amount" placeholder="Enter amount" min="1" step="1" oninput="validateAmount(this, Infinity)" />
+            <span class="field-hint">Cannot exceed your current balance</span>
+          </div>
+          <button class="btn-gold-lg full" onclick="handleWithdraw()">Withdraw</button>
+        </div>
+      </section>
+
+      <!-- ══════════════ PAGE: MY DETAILS ══════════════ -->
+      <section class="page" id="page-details">
+        <div class="page-header">
+          <h2 class="page-title">My Details</h2>
+          <p class="page-sub">View your account information</p>
+        </div>
+        <div class="card">
+          <div class="field-group">
+            <label>Account Number</label>
+            <input type="text" id="det-acc" placeholder="RS-XXXXXXX" />
+          </div>
+          <div class="field-group">
+            <label>4-Digit PIN</label>
+            <input type="password" id="det-pin" maxlength="4" placeholder="••••" />
+          </div>
+          <button class="btn-gold-lg full" onclick="handleDetails()">View Details</button>
+        </div>
+
+        <!-- Details result card — hidden until data is fetched -->
+        <div class="card mt" id="details-result" style="display:none;">
+          <div class="balance-hero small">
+            <div class="balance-label">Balance</div>
+            <div class="balance-amount" id="det-balance">₹0</div>
+            <div class="account-chip"   id="det-accno-chip">—</div>
+          </div>
+          <!-- Individual info rows filled by JS -->
+          <div class="info-table" id="details-table"></div>
+        </div>
+      </section>
+
+      <!-- ══════════════ PAGE: UPDATE ══════════════ -->
+      <section class="page" id="page-update">
+        <div class="page-header">
+          <h2 class="page-title">Update Details</h2>
+          <p class="page-sub">Leave blank to keep existing value</p>
+        </div>
+        <div class="card">
+          <div class="field-group">
+            <label>Account Number</label>
+            <input type="text" id="upd-acc" placeholder="RS-XXXXXXX" />
+          </div>
+          <div class="field-group">
+            <label>Current PIN</label>
+            <input type="password" id="upd-pin" maxlength="4" placeholder="••••" />
+          </div>
+          <div class="field-divider">Fields to Update</div>
+          <div class="field-group">
+            <label>New Name (optional)</label>
+            <input type="text" id="upd-name" placeholder="Leave blank to keep current" />
+          </div>
+          <div class="field-group">
+            <label>New Email (optional)</label>
+            <!-- Email format validated in JS -->
+            <input type="email" id="upd-email" placeholder="Leave blank to keep current" oninput="validateEmailInput(this)" />
+          </div>
+          <div class="field-group">
+            <label>New PIN (optional)</label>
+            <input type="password" id="upd-newpin" maxlength="4" placeholder="Leave blank to keep current" oninput="validatePinInput(this)" />
+          </div>
+          <button class="btn-gold-lg full" onclick="handleUpdate()">Save Changes</button>
+        </div>
+      </section>
+
+      <!-- ══════════════ PAGE: CLOSE ACCOUNT ══════════════ -->
+      <section class="page" id="page-close">
+        <div class="page-header">
+          <h2 class="page-title">Close Account</h2>
+          <p class="page-sub" style="color:#ff6b6b;">⚠ This action is permanent and cannot be undone</p>
+        </div>
+        <div class="card danger-card">
+          <div class="field-group">
+            <label>Account Number</label>
+            <input type="text" id="cls-acc" placeholder="RS-XXXXXXX" />
+          </div>
+          <div class="field-group">
+            <label>4-Digit PIN</label>
+            <input type="password" id="cls-pin" maxlength="4" placeholder="••••" />
+          </div>
+          <!-- Confirmation checkbox — must be ticked before deletion -->
+          <label class="checkbox-label">
+            <input type="checkbox" id="cls-confirm" />
+            I understand this will permanently delete my account and all data
+          </label>
+          <button class="btn-danger full" onclick="handleClose()">Close My Account</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODAL OVERLAY — darkens background when a modal is open
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+
+  <!-- ─── MODAL: LOGIN ──────────────────────────────────────── -->
+  <div class="modal" id="modal-login">
+    <div class="modal-header">
+      <h2>Welcome Back</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="field-group">
+      <label>Account Number</label>
+      <input type="text" id="login-acc" placeholder="RS-XXXXXXX" />
+    </div>
+    <div class="field-group">
+      <label>4-Digit PIN</label>
+      <input type="password" id="login-pin" maxlength="4" placeholder="••••" oninput="validatePinInput(this)" />
+    </div>
+    <!-- Login triggers OTP send before actual login -->
+    <button class="btn-gold-lg full" onclick="initiateLogin()">Send OTP & Login</button>
+    <p class="modal-switch">Don't have an account? <a onclick="showModal('signup')">Sign Up</a></p>
+  </div>
+
+  <!-- ─── MODAL: SIGNUP ─────────────────────────────────────── -->
+  <div class="modal" id="modal-signup">
+    <div class="modal-header">
+      <h2>Open Account</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <!-- Step indicator: Step 1 of 3, Step 2, Step 3 -->
+    <div class="steps-bar">
+      <div class="step active" id="step1-dot">1</div>
+      <div class="step-line"></div>
+      <div class="step" id="step2-dot">2</div>
+      <div class="step-line"></div>
+      <div class="step" id="step3-dot">3</div>
+    </div>
+
+    <!-- ── STEP 1: Personal Information ── -->
+    <div id="signup-step1">
+      <p class="step-label">Step 1 · Personal Information</p>
+
+      <div class="field-group">
+        <label>Full Name *</label>
+        <!-- Only letters and spaces allowed — validated in JS -->
+        <input type="text" id="su-name" placeholder="Your legal full name" oninput="validateNameInput(this)" />
+        <span class="field-hint">Letters only, no numbers or symbols</span>
+      </div>
+
+      <div class="field-group">
+        <label>Age *</label>
+        <!-- Integer only; triggers minor flow if < 18 -->
+        <input type="number" id="su-age" placeholder="Your age" min="1" max="120" step="1" oninput="validateAgeInput(this)" />
+        <span class="field-hint">Must be a whole number between 1–120</span>
+      </div>
+
+      <!-- Minor guardian section — shown only when age < 18 -->
+      <div id="minor-section" style="display:none;">
+        <div class="minor-banner">
+          👨‍👩‍👧 Minor Account — Guardian Details Required
+        </div>
+        <div class="field-group">
+          <label>Guardian Full Name *</label>
+          <input type="text" id="su-gname" placeholder="Guardian's legal name" oninput="validateNameInput(this)" />
+        </div>
+        <div class="field-group">
+          <label>Guardian Age *</label>
+          <input type="number" id="su-gage" placeholder="Guardian's age" min="18" max="120" step="1" />
+          <span class="field-hint">Guardian must be 18 or above</span>
+        </div>
+        <div class="field-group">
+          <label>Relationship to Minor *</label>
+          <!-- Dropdown for relationship type -->
+          <select id="su-relation">
+            <option value="">Select relationship</option>
+            <option value="Father">Father</option>
+            <option value="Mother">Mother</option>
+            <option value="Legal Guardian">Legal Guardian</option>
+            <option value="Grandparent">Grandparent</option>
+            <option value="Sibling (18+)">Sibling (18+)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Guardian Phone *</label>
+          <!-- 10-digit Indian phone number -->
+          <input type="tel" id="su-gphone" placeholder="10-digit mobile number" maxlength="10" oninput="validatePhoneInput(this)" />
+        </div>
+        <div class="field-group">
+          <label>Guardian Email *</label>
+          <input type="email" id="su-gemail" placeholder="guardian@email.com" oninput="validateEmailInput(this)" />
+        </div>
+        <div class="field-group">
+          <label>Guardian ID Proof (PDF, max 2MB) *</label>
+          <!-- Accepts only PDF files; size validated in JS -->
+          <div class="file-upload-box" onclick="triggerFile('guardian-doc')">
+            <div class="file-icon">📄</div>
+            <div id="guardian-doc-label">Click to upload Guardian ID PDF</div>
+            <input type="file" id="guardian-doc" accept=".pdf" style="display:none;" onchange="handleFile(this,'guardian-doc-label')" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Email Address *</label>
+        <!-- Validates email format with regex in JS -->
+        <input type="email" id="su-email" placeholder="you@example.com" oninput="validateEmailInput(this)" />
+        <span class="field-hint">Must be a valid email (e.g. name@domain.com)</span>
+      </div>
+
+      <div class="field-group">
+        <label>Phone Number *</label>
+        <!-- Must be 10 digits, Indian format -->
+        <input type="tel" id="su-phone" placeholder="10-digit mobile number" maxlength="10" oninput="validatePhoneInput(this)" />
+        <span class="field-hint">OTP will be sent to this number</span>
+      </div>
+
+      <div class="field-group">
+        <label>4-Digit PIN *</label>
+        <input type="password" id="su-pin" maxlength="4" placeholder="Choose a 4-digit PIN" oninput="validatePinInput(this)" />
+        <span class="field-hint">Exactly 4 digits (e.g. 4821)</span>
+      </div>
+
+      <button class="btn-gold-lg full" onclick="goStep2()">Continue →</button>
+    </div>
+
+    <!-- ── STEP 2: Documents ── -->
+    <div id="signup-step2" style="display:none;">
+      <p class="step-label">Step 2 · Upload Documents</p>
+
+      <!-- Aadhaar Card PDF upload -->
+      <div class="field-group">
+        <label>Aadhaar Card (PDF, max 2MB) *</label>
+        <div class="file-upload-box" onclick="triggerFile('aadhaar-doc')">
+          <div class="file-icon">🪪</div>
+          <div id="aadhaar-doc-label">Click to upload Aadhaar PDF</div>
+          <input type="file" id="aadhaar-doc" accept=".pdf" style="display:none;" onchange="handleFile(this,'aadhaar-doc-label')" />
+        </div>
+      </div>
+
+      <!-- PAN Card PDF upload -->
+      <div class="field-group">
+        <label>PAN Card (PDF, max 2MB) *</label>
+        <div class="file-upload-box" onclick="triggerFile('pan-doc')">
+          <div class="file-icon">🗂</div>
+          <div id="pan-doc-label">Click to upload PAN Card PDF</div>
+          <input type="file" id="pan-doc" accept=".pdf" style="display:none;" onchange="handleFile(this,'pan-doc-label')" />
+        </div>
+      </div>
+
+      <!-- Address Proof PDF upload -->
+      <div class="field-group">
+        <label>Address Proof (PDF, max 2MB) *</label>
+        <div class="file-upload-box" onclick="triggerFile('address-doc')">
+          <div class="file-icon">🏠</div>
+          <div id="address-doc-label">Click to upload Address Proof PDF</div>
+          <input type="file" id="address-doc" accept=".pdf" style="display:none;" onchange="handleFile(this,'address-doc-label')" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-outline" onclick="goStep1()">← Back</button>
+        <button class="btn-gold-lg" onclick="goStep3()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: OTP Verification ── -->
+    <div id="signup-step3" style="display:none;">
+      <p class="step-label">Step 3 · OTP Verification</p>
+
+      <!-- Displays phone number OTP was sent to -->
+      <div class="otp-info">
+        OTP sent to <strong id="otp-phone-display"></strong>
+        <br><small>Check your messages (demo OTP shown in console)</small>
+      </div>
+
+      <!-- 6-digit OTP input boxes — one digit per box -->
+      <div class="otp-boxes">
+        <!-- Each box: maxlength=1, auto-advances to next on input -->
+        <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,0)" id="otp0" />
+        <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,1)" id="otp1" />
+        <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,2)" id="otp2" />
+        <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,3)" id="otp3" />
+        <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,4)" id="otp4" />
+        <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,5)" id="otp5" />
+      </div>
+
+      <!-- Countdown timer and resend button -->
+      <div class="otp-timer">
+        Resend OTP in <span id="otp-countdown">30</span>s
+        <button class="btn-text" id="resend-btn" style="display:none;" onclick="resendOTP()">Resend</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-outline" onclick="goStep2()">← Back</button>
+        <button class="btn-gold-lg" onclick="verifyAndCreate()">Verify & Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: OTP FOR LOGIN ──────────────────────────────── -->
+  <div class="modal" id="modal-otp-login">
+    <div class="modal-header">
+      <h2>Verify Identity</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="otp-info">
+      OTP sent to your registered number
+      <br><small>Demo OTP shown in browser console (F12)</small>
+    </div>
+    <div class="otp-boxes">
+      <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,0,'login')" id="lotp0" />
+      <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,1,'login')" id="lotp1" />
+      <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,2,'login')" id="lotp2" />
+      <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,3,'login')" id="lotp3" />
+      <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,4,'login')" id="lotp4" />
+      <input class="otp-box" type="text" maxlength="1" oninput="otpAdvance(this,5,'login')" id="lotp5" />
+    </div>
+    <button class="btn-gold-lg full" onclick="verifyLoginOTP()">Verify & Login</button>
+  </div>
+
+  <!-- ─── TOAST NOTIFICATION ────────────────────────────────── -->
+  <!-- Small popup at bottom-right for success/error messages -->
+  <div class="toast" id="toast">
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- Link to external JS file — loaded last so DOM is ready -->
+  <script src="app.js"></script>
+</body>
+</html>
