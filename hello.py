@@ -629,9 +629,9 @@ def get_stats():
 # Place index.html, style.css, app.js in the same folder as backend.py
 # ───────────────────────────────────────────────────────────────
 @app.get("/")
-def serve_index():
-    """Serve the main HTML file when the root URL is visited."""
-    return FileResponse("index.html")              # Send index.html to the browser
+def home():
+    return {"message": "ReSan Bank API is running 🚀"}
+             # Send index.html to the browser
 
 # Serve CSS, JS and other static assets from the current directory
 app.mount("/", StaticFiles(directory="."), name="static")
