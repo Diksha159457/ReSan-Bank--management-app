@@ -3,7 +3,10 @@
 # Install all dependencies with: pip install -r requirements.txt
 # ═══════════════════════════════════════════════════════════════
 
-fastapi==0.111.0          # Web framework for building the REST API
-uvicorn[standard]==0.29.0 # ASGI server to run FastAPI
-python-multipart==0.0.9   # Required for file uploads (UploadFile/Form support)
-pydantic==2.7.1           # Data validation for request/response models
+--only-binary=:all:
+
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+pydantic==2.6.4
+gunicorn==21.2.0
