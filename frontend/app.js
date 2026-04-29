@@ -106,7 +106,8 @@ async function sendOTP(prefix) {
   if (!phone || phone.length !== 10) { setMsg(prefix + '-msg', 'Enter a valid 10-digit phone number.', 'error'); return; }
   try {
     const d = await apiCall('POST', '/api/otp/send', { phone });
-    setMsg(prefix + '-msg', `OTP sent! (Dev: ${d.dev_otp})`, 'info');
+    const hint = d.dev_otp ? ` (Dev OTP: ${d.dev_otp})` : ' Check your phone.';
+    setMsg(prefix + '-msg', d.message + hint, 'info');
     showToast('OTP sent to ' + phone);
   } catch (e) { setMsg(prefix + '-msg', e.message, 'error'); }
 }
@@ -155,7 +156,8 @@ async function loginSendOTP() {
 
   try {
     const d = await apiCall('POST', '/api/login/otp', { acc_no, pin });
-    setMsg('login-msg', `OTP sent. (Dev: ${d.dev_otp})`, 'info');
+    const hint = d.dev_otp ? ` (Dev OTP: ${d.dev_otp})` : ' Check your registered phone.';
+    setMsg('login-msg', d.message + hint, 'info');
     document.getElementById('loginOTPArea').style.display = 'block';
     document.getElementById('loginSendOTPBtn').style.display = 'none';
   } catch (e) { setMsg('login-msg', e.message, 'error'); }

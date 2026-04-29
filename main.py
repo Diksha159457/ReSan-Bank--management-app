@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import os
 import random
 import string
 from datetime import datetime
@@ -11,6 +13,43 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, field_validator
+
+# ── Twilio SMS (optional — falls back to dev_otp if not configured) ───────
+TWILIO_SID   = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+TWILIO_FROM  = os.environ.get("TWILIO_PHONE_NUMBER", "")  # e.g. +14155552671
+
+_twilio_client = None
+if TWILIO_SID and TWILIO_TOKEN and TWILIO_FROM:
+    try:
+        from twilio.rest import Client as TwilioClient
+        _twilio_client = TwilioClient(TWILIO_SID, TWILIO_TOKEN)
+        logging.info("✅ Twilio SMS enabled")
+    except ImportError:
+        logging.warning("twilio package not installed — pip install twilio")
+else:
+    logging.warning("Twilio env vars missing — OTP shown in API response (dev mode)")
+
+
+def send_sms(phone: str, otp: str) -> bool:
+    """Send OTP via Twilio. Returns True on success, False on failure/dev."""
+    if not _twilio_client:
+        return False
+    # Normalise Indian numbers: 10 digits → +91XXXXXXXXXX
+    digits = "".join(ch for ch in phone if ch.isdigit())
+    if len(digits) == 10:
+        digits = "91" + digits
+    to_number = "+" + digits
+    try:
+        _twilio_client.messages.create(
+            body=f"Your ReSan Bank OTP is {otp}. Valid for 10 minutes. Do not share with anyone.",
+            from_=TWILIO_FROM,
+            to=to_number,
+        )
+        return True
+    except Exception as exc:
+        logging.error(f"Twilio SMS failed: {exc}")
+        return False
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_FILE = BASE_DIR / "resan_data.json"
@@ -224,8 +263,11 @@ def health() -> dict[str, str]:
 def send_otp(req: OTPRequest) -> dict[str, str]:
     otp = generate_otp()
     otp_store[req.phone] = otp
-    # In production: integrate SMS gateway here
-    return {"message": f"OTP sent to {req.phone}", "dev_otp": otp}
+    sms_sent = send_sms(req.phone, otp)
+    resp: dict[str, str] = {"message": f"OTP {'sent via SMS' if sms_sent else 'generated'} for {req.phone}"}
+    if not sms_sent:
+        resp["dev_otp"] = otp   # only expose in dev/fallback mode
+    return resp
 
 
 @app.post("/api/account/create")
@@ -273,7 +315,11 @@ def login_send_otp(req: LoginOTPRequest) -> dict[str, str]:
         raise HTTPException(status_code=400, detail="No phone number on file.")
     otp = generate_otp()
     otp_store[phone] = otp
-    return {"message": "OTP sent to registered phone.", "dev_otp": otp}
+    sms_sent = send_sms(phone, otp)
+    resp: dict[str, str] = {"message": f"OTP {'sent via SMS to registered number' if sms_sent else 'generated'}"}
+    if not sms_sent:
+        resp["dev_otp"] = otp
+    return resp
 
 
 @app.post("/api/login/verify")
@@ -423,4 +469,3 @@ app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 if __name__ == "__main__":
     import os, uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), reload=False)
-
