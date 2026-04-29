@@ -11,7 +11,7 @@
   <!-- Google Fonts: Cormorant Garamond for luxury headings, Jost for body text -->
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <!-- Link to external CSS stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="frontend/style.css" />
 </head>
 <body>
 
@@ -54,8 +54,15 @@
         <a class="nav-item"        data-page="close"       onclick="showPage('close')">       <span class="nav-icon">✕</span> Close Acct   </a>
       </nav>
 
-      <!-- Bottom section: shows logged-in user info or login/signup buttons -->
+      <!-- Bottom section: theme toggle + auth buttons or user info -->
       <div class="sidebar-footer">
+        <!-- Theme toggle -->
+        <div class="theme-toggle">
+          <button class="theme-btn" id="theme-light" onclick="setTheme('light')">☀</button>
+          <button class="theme-btn active" id="theme-auto" onclick="setTheme('auto')">⚙</button>
+          <button class="theme-btn" id="theme-dark" onclick="setTheme('dark')">☾</button>
+        </div>
+
         <!-- Shown when user is NOT logged in -->
         <div id="auth-buttons">
           <button class="btn-gold"    onclick="showModal('login')">Login</button>    <!-- Opens login modal -->
@@ -511,6 +518,6 @@
   </div>
 
   <!-- Link to external JS file — loaded last so DOM is ready -->
-  <script src="app.js"></script>
+  <script src="frontend/app.js"></script>
 </body>
 </html>

@@ -16,10 +16,12 @@
 
 /* ─── CONFIG ─────────────────────────────────────────────────── */
 
-const BASE_URL = "https://resan-bank-management-app-2.onrender.com";
-// The base URL of our FastAPI backend running on Render.com
-// Every API call in this file is: BASE_URL + "/api/some-route"
-// ⚠️ If you redeploy to a new Render URL, update this one line
+const BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:8000"
+  : window.location.origin;
+// Automatically detects if running locally or in production
+// Local: uses http://localhost:8000
+// Production: uses the same origin as the frontend (e.g., https://your-app.onrender.com)
 
 
 /* ─── SESSION MANAGEMENT ─────────────────────────────────────── */
@@ -739,9 +741,13 @@ async function goStep3() {
     document.getElementById("step3-dot").classList.add("active");
     // Mark Step 3 as active
 
-    showToast(`OTP sent! Dev OTP: ${res.dev_otp}`, "info");
-    // Show the OTP in a toast for testing purposes
-    // res.dev_otp is sent back by the backend (development mode only)
+    // Show appropriate message based on SMS status
+    if (res.dev_otp) {
+      showToast(`Dev Mode - OTP: ${res.dev_otp}`, "info");
+      console.log("🔐 DEV OTP:", res.dev_otp);
+    } else {
+      showToast("OTP sent to your phone!", "success");
+    }
 
   } catch (err) {
     showToast(err.message, "error");
@@ -762,8 +768,13 @@ async function resendOTP() {
     startOTPTimer();
     // Restart the 30-second countdown
 
-    showToast(`OTP resent! Dev OTP: ${res.dev_otp}`, "info");
-    // Show the new OTP in the toast
+    // Show appropriate message based on SMS status
+    if (res.dev_otp) {
+      showToast(`Dev Mode - OTP: ${res.dev_otp}`, "info");
+      console.log("🔐 DEV OTP:", res.dev_otp);
+    } else {
+      showToast("OTP resent to your phone!", "success");
+    }
   } catch (err) {
     showToast(err.message, "error");
   }
@@ -911,9 +922,13 @@ async function initiateLogin() {
     // Open the OTP verification modal after a 300ms delay
     // The delay allows the close animation to complete before opening the next modal
 
-    showToast(`OTP sent! Dev OTP: ${res.dev_otp}`, "info");
-    // Show the dev OTP in a toast for testing
-    // In production: OTP is sent via SMS, no dev_otp in response
+    // Show appropriate message based on SMS status
+    if (res.dev_otp) {
+      showToast(`Dev Mode - OTP: ${res.dev_otp}`, "info");
+      console.log("🔐 DEV LOGIN OTP:", res.dev_otp);
+    } else {
+      showToast("OTP sent to your registered phone!", "success");
+    }
 
   } catch (err) {
     showToast(err.message, "error");
@@ -1331,15 +1346,13 @@ async function loadStats() {
     // Route: GET /api/stats in main.py
     // Returns: { total_accounts: 5, total_balance: 125000 }
 
+    // Stats display is optional - elements may not exist in HTML
+    // This is just for demonstration purposes
     const totalEl   = document.getElementById("stat-total-accounts");
     const balanceEl = document.getElementById("stat-total-balance");
-    // Elements on the Home page that display the statistics
 
     if (totalEl)   totalEl.textContent   = res.total_accounts;
-    // e.g. shows "5" for total accounts
-
     if (balanceEl) balanceEl.textContent = "₹" + res.total_balance.toLocaleString("en-IN");
-    // e.g. shows "₹1,25,000" for total balance across all accounts
 
   } catch (_) {
     // Silently ignore errors — stats are non-critical
@@ -1348,11 +1361,67 @@ async function loadStats() {
 }
 
 
+/* ─── THEME MANAGEMENT ────────────────────────────────────────── */
+
+function applyTheme(theme) {
+  // Applies the specified theme to the document
+  // theme: "light", "dark", or "auto"
+
+  if (theme === "auto") {
+    // Auto mode: detect system preference
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", prefersDark ? "dark" : "light");
+  } else {
+    // Manual mode: apply user's choice
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+
+  // Update button states
+  document.querySelectorAll(".theme-btn").forEach(btn => btn.classList.remove("active"));
+  const activeBtn = document.getElementById(`theme-${theme}`);
+  if (activeBtn) activeBtn.classList.add("active");
+}
+
+function setTheme(theme) {
+  // Called when user clicks a theme button
+  // Saves preference and applies theme
+
+  localStorage.setItem("resan_theme", theme);
+  // Save theme preference to localStorage
+
+  applyTheme(theme);
+  // Apply the theme immediately
+
+  showToast(`Theme set to ${theme === "auto" ? "auto (system)" : theme} mode`, "info");
+  // Show confirmation toast
+}
+
+function initTheme() {
+  // Initialize theme on page load
+  // Reads saved preference or defaults to auto
+
+  const savedTheme = localStorage.getItem("resan_theme") || "auto";
+  applyTheme(savedTheme);
+
+  // Listen for system theme changes when in auto mode
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    const currentTheme = localStorage.getItem("resan_theme") || "auto";
+    if (currentTheme === "auto") {
+      // Re-apply auto theme when system preference changes
+      applyTheme("auto");
+    }
+  });
+}
+
+
 /* ─── INITIALISATION ──────────────────────────────────────────── */
 
 document.addEventListener("DOMContentLoaded", () => {
   // This runs once when the browser has fully loaded and parsed index.html
   // It's the entry point that starts up the entire application
+
+  initTheme();
+  // Initialize theme system first
 
   refreshAuthUI();
   // Check if user was already logged in from a previous session

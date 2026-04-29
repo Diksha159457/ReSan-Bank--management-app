@@ -1,3 +1,32 @@
+# Python
 .venv
 __pycache__
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment variables
+.env
+config/.env
+
+# macOS
+.DS_Store
+
+# Uploads
+uploads/*.pdf
+uploads/*
+!uploads/.gitkeep
+
+# Data backups
+resan_data.json.backup
+*.backup
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

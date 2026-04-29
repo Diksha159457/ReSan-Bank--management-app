@@ -1,26 +1,4 @@
-[
-  {
-    "name": "Diksha Shahi",
-    "age": 21,
-    "email": "dikshashahi299@gmail.com",
-    "pin": 2456,
-    "accountNo": "RS-4EH9#6R0",
-    "balance": 0
-  },
-  {
-    "name": "Diksha Shahi",
-    "age": 21,
-    "email": "dikshashahi299@gmail.com",
-    "pin": 2456,
-    "accountNo": "RS-91$X5NL0",
-    "balance": 0
-  },
-  {
-    "name": "Diksha Shahi",
-    "age": 21,
-    "email": "dikshashahi299@gmail.com",
-    "pin": 2456,
-    "accountNo": "RS-@X329H1A",
-    "balance": 0
-  }
-]
+{
+  "accounts": {},
+  "transactions": {}
+}
