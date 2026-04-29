@@ -5,9 +5,7 @@
 
 --only-binary=:all:
 
-fastapi==0.109.2
-uvicorn[standard]==0.27.1
-python-multipart==0.0.9
-pydantic==2.5.3
-gunicorn==21.2.0
-twilio==9.0.4
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+pydantic==2.10.3
